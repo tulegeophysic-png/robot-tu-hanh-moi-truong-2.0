@@ -3,29 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraBot AI - Hệ Thống Giám Sát Môi Trường</title>
+    <title>AuraBot AI - Hệ Thống Giám Sát Môi Trường & Cảnh Báo</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <div id="emergency-banner" class="emergency-banner hidden">
+        <div class="banner-content">
+            <i class="fa-solid fa-triangle-exclamation fa-beat"></i>
+            <span id="emergency-text">CẢNH BÁO NGUY HẠI KHẨN CẤP!</span>
+            <button onclick="dismissEmergency()" class="btn-dismiss">ĐÃ XỬ LÝ / TẮT CÒI</button>
+        </div>
+    </div>
+
     <div class="dashboard">
         <header class="header">
             <div class="logo">
                 <i class="fa-solid fa-robot"></i>
-                <h1>AuraBot <span>AI Monitor</span></h1>
+                <h1>AuraBot <span>AI Monitor v2.0</span></h1>
             </div>
             <div class="robot-status">
-                <span>Trạng thái Robot: </span>
+                <span>Trạng thái: </span>
                 <strong id="robot-state-text">Đang đo & quét</strong>
             </div>
         </header>
 
         <section class="control-panel">
-            <h3><i class="fa-solid fa-sliders"></i> Điều Điều Khiển Thủ Công</h3>
-            <div class="control-buttons">
-                <button id="btn-toggle-charge" class="btn btn-charge" onclick="toggleCharging()">
-                    <i class="fa-solid fa-plug-circle-bolt"></i> <span id="btn-charge-text">Cho Robot Đi Sạc (Thủ Công)</span>
+            <div class="control-group">
+                <h3><i class="fa-solid fa-power-off"></i> BẬT/TẮT ROBOT THỦ CÔNG:</h3>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="power-toggle" checked onchange="toggleRobotPower(this)">
+                    <span class="slider round"></span>
+                </label>
+                <span id="power-status-label" class="status-label active">ON (Hoạt động)</span>
+            </div>
+
+            <div class="control-group">
+                <h3><i class="fa-solid fa-plug-circle-bolt"></i> CHẾ ĐỘ SẠC THỦ CÔNG:</h3>
+                <button id="btn-manual-charge" class="btn btn-charge" onclick="toggleManualCharging()">
+                    <i class="fa-solid fa-charging-station"></i> <span id="btn-charge-text">Gọi Robot Về Sạc</span>
                 </button>
                 <button class="btn btn-reset" onclick="resetBattery()">
                     <i class="fa-solid fa-battery-full"></i> Reset Pin 100%
@@ -40,10 +57,20 @@
                     <div class="metric-info">
                         <label>Dung Lượng Pin</label>
                         <div><span class="value" id="val-battery">100</span> <span class="unit">%</span></div>
+                        <small id="battery-status-sub">Trạng thái: Đang xả pin</small>
                     </div>
                 </div>
 
-                <div class="metric-card">
+                <div class="metric-card" id="card-gas">
+                    <i class="fa-solid fa-fire-flame-curved icon gas"></i>
+                    <div class="metric-info">
+                        <label>Nồng Độ Khí Gas / Khói</label>
+                        <div><span class="value" id="val-gas">120</span> <span class="unit">PPM</span></div>
+                        <small id="gas-status-sub" class="text-safe">An Toàn</small>
+                    </div>
+                </div>
+
+                <div class="metric-card" id="card-temp">
                     <i class="fa-solid fa-temperature-high icon temp"></i>
                     <div class="metric-info">
                         <label>Nhiệt Độ</label>
@@ -83,7 +110,7 @@
                 </div>
 
                 <div class="logs-container">
-                    <h3><i class="fa-solid fa-list-check"></i> Nhật Ký Hệ Thống</h3>
+                    <h3><i class="fa-solid fa-list-check"></i> Nhật Ký Hệ Thống & Cảnh Báo</h3>
                     <div class="log-box" id="system-logs"></div>
                 </div>
             </section>

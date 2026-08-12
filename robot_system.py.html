@@ -1,0 +1,80 @@
+import random
+import time
+from dataclasses import dataclass, asdict
+from typing import Dict, Any, List
+
+@dataclass
+class EnvironmentalData:
+    temperature: float   # Nhiệt độ (°C)
+    humidity: float      # Độ ẩm (%)
+    pm25: float          # Bụi mịn PM2.5 (µg/m³)
+    co2: float           # Khí CO2 (ppm)
+    gas_ppm: float       # Khí Gas / Khói (PPM) -> Nâng cấp Tác vụ 3
+    battery: float       # Dung lượng Pin (%) -> Nâng cấp Tác vụ 2
+    obstacle_dist: float # Khoảng cách vật cản (cm)
+
+class IndoorRobotAI:
+    BATTERY_CRITICAL_THRESHOLD = 15.0  # Ngưỡng Pin nguy kịch (%)
+    GAS_ALARM_THRESHOLD = 400.0        # Ngưỡng cảnh báo khí Gas (PPM)
+    FIRE_TEMP_THRESHOLD = 50.0         # Ngưỡng cảnh báo nhiệt độ cháy (°C)
+
+    def __init__(self):
+        self.is_powered_on = True       # Nút bật/tắt nguồn thủ công (Tác vụ 1)
+        self.is_docked_charging = False # Trạng thái sạc pin
+
+    def set_power(self, power_status: bool):
+        """Bật / Tắt Robot thủ công"""
+        self.is_powered_on = power_status
+        status_str = "ON" if power_status else "OFF"
+        print(f"⚙️ [MANUAL CONTROL] Robot đã chuyển sang trạng thái: {status_str}")
+
+    def analyze_and_decide(self, data: EnvironmentalData) -> Dict[str, Any]:
+        if not self.is_powered_on:
+            return {"status": "POWER_OFF", "action": "TẮT MÁY", "alerts": []}
+
+        alerts: List[str] = []
+        action = "TIẾP TỤC DI CHUYỂN & QUÉT MÔI TRƯỜNG"
+        
+        # 🚨 1. KIỂM TRA NGUY CƠ BÁO CHÁY & RÒ RỈ GAS (TÁC VỤ 3 - ƯU TIÊN CAO NHẤT)
+        if data.gas_ppm > self.GAS_ALARM_THRESHOLD:
+            alerts.append(f"🚨 CẢNH BÁO RÒ RỈ KHÍ GAS CỰC NGUY HIỂM ({data.gas_ppm} PPM)!")
+            action = "DỪNG DI CHUYỂN + PHÁT CÒI CẢNH BÁO KHẨN CẤP"
+        
+        if data.temperature > self.FIRE_TEMP_THRESHOLD:
+            alerts.append(f"🔥 CẢNH BÁO NGUY CƠ CHÁY / NHIỆT ĐỘ CAO BẤT THƯỜNG ({data.temperature}°C)!")
+            action = "DỪNG DI CHUYỂN + PHÁT CÒI CẢNH BÁO KHẨN CẤP"
+
+        # 🔋 2. KIỂM TRA QUẢN LÝ PIN & TỰ ĐỘNG TÌM TRẠM SẠC (TÁC VỤ 2)
+        if data.battery <= self.BATTERY_CRITICAL_THRESHOLD and not self.is_docked_charging:
+            alerts.append(f"🔋 PIN NGUY KỊCH ({data.battery}%). Kích hoạt Auto-Docking!")
+            if "CẢNH BÁO" not in action:
+                action = "TỰ ĐỘNG TÌM VÀ BẮT ĐẦU DI CHUYỂN VỀ TRẠM SẠC (AUTO-DOCKING)"
+                self.is_docked_charging = True
+
+        return {
+            "status": "EMERGENCY" if alerts else "NORMAL",
+            "action": action,
+            "alerts": alerts
+        }
+
+# --- GIẢ LẬP VẬN HÀNH ---
+if __name__ == "__main__":
+    robot = IndoorRobotAI()
+    
+    # Test mẫu dữ liệu phát hiện khí gas cao và pin yếu
+    test_sample = EnvironmentalData(
+        temperature=29.5,
+        humidity=60.0,
+        pm25=45.0,
+        co2=500.0,
+        gas_ppm=480.0,     # Phát hiện rò rỉ gas
+        battery=12.0,      # Pin yếu < 15%
+        obstacle_dist=120.0
+    )
+
+    result = robot.analyze_and_decide(test_sample)
+    print("\n--- KẾT QUẢ AI PHÂN TÍCH ---")
+    print(f"Trạng thái: {result['status']}")
+    print(f"Hành động Robot: {result['action']}")
+    for alert in result['alerts']:
+        print(f"Cảnh báo: {alert}")
