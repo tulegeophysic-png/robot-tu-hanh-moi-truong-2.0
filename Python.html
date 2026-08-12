@@ -1,0 +1,122 @@
+import random
+import time
+import json
+from dataclasses import dataclass, asdict
+from typing import Dict, Any, Tuple
+
+# ==========================================
+# 1. CẤU TRÚC DỮ LIỆU CẢM BIẾN
+# ==========================================
+@dataclass
+class EnvironmentalData:
+    temperature: float  # Nhiệt độ (°C)
+    humidity: float     # Độ ẩm (%)
+    pm25: float         # Bụi mịn PM2.5 (µg/m³)
+    co2: float          # Cồng độ CO2 (ppm)
+    obstacle_dist: float# Khoảng cách vật cản (cm)
+
+# ==========================================
+# 2. KHỞI TẠO CẢM BIẾN (SENSOR ARRAY)
+# ==========================================
+class SensorArray:
+    """Giả lập hoặc đọc dữ liệu thực tế từ các cảm biến phần cứng."""
+    def read_all(() -> EnvironmentalData:
+        return EnvironmentalData(
+            temperature=round(random.uniform(22.0, 38.0), 1),
+            humidity=round(random.uniform(40.0, 85.0), 1),
+            pm25=round(random.uniform(10.0, 150.0), 1),
+            co2=round(random.uniform(400.0, 1600.0), 0),
+            obstacle_dist=round(random.uniform(10.0, 200.0), 1)
+        )
+
+# ==========================================
+# 3. AI PHÂN TÍCH MÔI TRƯỜNG & CẢNH BÁO
+# ==========================================
+class EnvironmentAI:
+    """Bộ não AI phân tích chỉ số môi trường và đưa ra khuyến nghị sức khỏe."""
+    
+    @staticmethod
+    def analyze(data: EnvironmentalData) -> Dict[str, Any]:
+        warnings = []
+        recommendations = []
+        status = "AN TOÀN"
+
+        # Cảnh báo Bụi mịn PM2.5
+        if data.pm25 > 100:
+            status = "NGUY HIỂM"
+            warnings.append("Chỉ số PM2.5 vượt ngưỡng nghiêm trọng!")
+            recommendations.append("Kích hoạt máy lọc không khí công suất tối đa và đeo khẩu trang N95.")
+        elif data.pm25 > 50:
+            if status != "NGUY HIỂM": status = "CẢNH BÁO"
+            warnings.append("Chỉ số PM2.5 ở mức trung bình cao.")
+            recommendations.append("Bật máy lọc không khí ở chế độ tự động.")
+
+        # Cảnh báo CO2
+        if data.co2 > 1200:
+            if status != "NGUY HIỂM": status = "CẢNH BÁO"
+            warnings.append("Nồng độ CO2 cao, thiếu oxy.")
+            recommendations.append("Mở quạt thông gió hoặc cửa sổ để trao đổi không khí.")
+
+        # Cảnh báo Nhiệt độ & Độ ẩm
+        if data.temperature > 35.0:
+            warnings.append("Nhiệt độ phòng quá cao.")
+            recommendations.append("Bật điều hòa làm mát.")
+        elif data.humidity > 75.0:
+            warnings.append("Độ ẩm không khí cao, dễ sinh nấm mốc.")
+            recommendations.append("Bật chế độ hút ẩm trên điều hòa.")
+
+        if not warnings:
+            recommendations.append("Môi trường đạt chuẩn lý tưởng, duy trì trạng thái hiện tại.")
+
+        return {
+            "status": status,
+            "warnings": warnings,
+            "recommendations": recommendations
+        }
+
+# ==========================================
+# 4. ĐIỀU HƯỚNG ROBOT (NAVIGATION)
+# ==========================================
+class RobotNavigation:
+    """Quản lý di chuyển và xử lý va chạm."""
+    SAFE_DISTANCE_CM = 30.0
+
+    @classmethod
+    def make_decision(cls, obstacle_dist: float) -> str:
+        if obstacle_dist < cls.SAFE_DISTANCE_CM:
+            return f"⚠️ VẬT CẢN ({obstacle_dist}cm) -> Lùi lại và Xoay hướng tránh va chạm!"
+        return f"🟢 ĐƯỜNG TRỐNG ({obstacle_dist}cm) -> Tiếp tục tiến thẳng và quét dữ liệu."
+
+# ==========================================
+# 5. LUỒNG CHÍNH ROBOT (MAIN ENGINE)
+# ==========================================
+class IndoorRobot:
+    def __init__(self):
+        self.sensors = SensorArray()
+        self.ai = EnvironmentAI()
+        self.nav = RobotNavigation()
+
+    def run_cycle(self):
+        print("\n" + "="*50)
+        # 1. Đọc dữ liệu cảm biến
+        env_data = self.sensors.read_all()
+        print(f"🤖 [SENSORS] T: {env_data.temperature}°C | H: {env_data.humidity}% | PM2.5: {env_data.pm25} | CO2: {env_data.co2}ppm")
+
+        # 2. AI Phân tích
+        ai_result = self.ai.analyze(env_data)
+        print(f"🧠 [AI STATUS]: {ai_result['status']}")
+        for w in ai_result['warnings']:
+            print(f"   - ⚠️ Cảnh báo: {w}")
+        for r in ai_result['recommendations']:
+            print(f"   - 💡 Khuyến nghị: {r}")
+
+        # 3. Điều hướng di chuyển
+        nav_action = self.nav.make_decision(env_data.obstacle_dist)
+        print(f"🚗 [NAVIGATION]: {nav_action}")
+
+if __name__ == "__main__":
+    robot = IndoorRobot()
+    print("🚀 Khởi chạy hệ thống Robot Tự Hành AuraBot AI...")
+    for _ in range(3): # Chạy thử 3 chu kỳ
+        robot.run_cycle()
+        time.sleep(2)
