@@ -3,117 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraBot AI - Hệ Thống Giám Sát Môi Trường & Cảnh Báo</title>
+    <title>AuraBot AI - Smart Dashboard 4.0</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div id="emergency-banner" class="emergency-banner hidden">
-        <div class="banner-content">
-            <i class="fa-solid fa-triangle-exclamation fa-beat"></i>
-            <span id="emergency-text">CẢNH BÁO NGUY HẠI KHẨN CẤP!</span>
-            <button onclick="dismissEmergency()" class="btn-dismiss">ĐÃ XỬ LÝ / TẮT CÒI</button>
-        </div>
-    </div>
-
-    <div class="dashboard">
-        <header class="header">
+    <div class="container">
+        <header>
             <div class="logo">
                 <i class="fa-solid fa-robot"></i>
-                <h1>AuraBot <span>AI Monitor v2.0</span></h1>
+                <h1>AuraBot <span>AI Dashboard 4.0</span></h1>
             </div>
-            <div class="robot-status">
-                <span>Trạng thái: </span>
-                <strong id="robot-state-text">Đang đo & quét</strong>
+            <div class="header-right">
+                <button class="btn btn-export" id="btn-export-excel">
+                    <i class="fa-solid fa-file-excel"></i> Xuất Báo Cáo
+                </button>
+                <button class="btn btn-ai-speak" id="btn-speak-ai">
+                    <i class="fa-solid fa-volume-high"></i> Trợ Lý AI Nói
+                </button>
+                <div class="robot-status">
+                    <span class="status-indicator online"></span>
+                    <span id="robot-state-text">Đang đo & quét</span>
+                </div>
             </div>
         </header>
 
-        <section class="control-panel">
-            <div class="control-group">
-                <h3><i class="fa-solid fa-power-off"></i> BẬT/TẮT ROBOT THỦ CÔNG:</h3>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="power-toggle" checked onchange="toggleRobotPower(this)">
-                    <span class="slider round"></span>
-                </label>
-                <span id="power-status-label" class="status-label active">ON (Hoạt động)</span>
-            </div>
-
-            <div class="control-group">
-                <h3><i class="fa-solid fa-plug-circle-bolt"></i> CHẾ ĐỘ SẠC THỦ CÔNG:</h3>
-                <button id="btn-manual-charge" class="btn btn-charge" onclick="toggleManualCharging()">
-                    <i class="fa-solid fa-charging-station"></i> <span id="btn-charge-text">Gọi Robot Về Sạc</span>
-                </button>
-                <button class="btn btn-reset" onclick="resetBattery()">
-                    <i class="fa-solid fa-battery-full"></i> Reset Pin 100%
-                </button>
-            </div>
-        </section>
-
-        <main class="main-content">
-            <section class="metrics-grid">
-                <div class="metric-card" id="card-battery">
-                    <i class="fa-solid fa-battery-three-quarters icon battery"></i>
-                    <div class="metric-info">
-                        <label>Dung Lượng Pin</label>
-                        <div><span class="value" id="val-battery">100</span> <span class="unit">%</span></div>
-                        <small id="battery-status-sub">Trạng thái: Đang xả pin</small>
+        <main class="dashboard-grid">
+            
+            <section class="card metrics-section">
+                <h2><i class="fa-solid fa-gauge-high"></i> Thông Số Môi Trường Real-time</h2>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <i class="fa-solid fa-temperature-half icon temp"></i>
+                        <div class="metric-info">
+                            <label>Nhiệt độ</label>
+                            <span class="value" id="val-temp">--</span> <span class="unit">°C</span>
+                        </div>
                     </div>
-                </div>
-
-                <div class="metric-card" id="card-gas">
-                    <i class="fa-solid fa-fire-flame-curved icon gas"></i>
-                    <div class="metric-info">
-                        <label>Nồng Độ Khí Gas / Khói</label>
-                        <div><span class="value" id="val-gas">120</span> <span class="unit">PPM</span></div>
-                        <small id="gas-status-sub" class="text-safe">An Toàn</small>
+                    <div class="metric-card">
+                        <i class="fa-solid fa-droplet icon humidity"></i>
+                        <div class="metric-info">
+                            <label>Độ ẩm</label>
+                            <span class="value" id="val-humidity">--</span> <span class="unit">%</span>
+                        </div>
                     </div>
-                </div>
-
-                <div class="metric-card" id="card-temp">
-                    <i class="fa-solid fa-temperature-high icon temp"></i>
-                    <div class="metric-info">
-                        <label>Nhiệt Độ</label>
-                        <div><span class="value" id="val-temp">28.5</span> <span class="unit">°C</span></div>
+                    <div class="metric-card">
+                        <i class="fa-solid fa-smog icon pm25"></i>
+                        <div class="metric-info">
+                            <label>Bụi mịn PM2.5</label>
+                            <span class="value" id="val-pm25">--</span> <span class="unit">µg/m³</span>
+                        </div>
                     </div>
-                </div>
-
-                <div class="metric-card">
-                    <i class="fa-solid fa-droplet icon humidity"></i>
-                    <div class="metric-info">
-                        <label>Độ Ẩm</label>
-                        <div><span class="value" id="val-humidity">62.0</span> <span class="unit">%</span></div>
-                    </div>
-                </div>
-
-                <div class="metric-card">
-                    <i class="fa-solid fa-smog icon pm25"></i>
-                    <div class="metric-info">
-                        <label>Bụi Mịn PM2.5</label>
-                        <div><span class="value" id="val-pm25">35.0</span> <span class="unit">µg/m³</span></div>
-                    </div>
-                </div>
-
-                <div class="metric-card">
-                    <i class="fa-solid fa-wind icon co2"></i>
-                    <div class="metric-info">
-                        <label>Khí CO2</label>
-                        <div><span class="value" id="val-co2">450</span> <span class="unit">ppm</span></div>
+                    <div class="metric-card">
+                        <i class="fa-solid fa-wind icon co2"></i>
+                        <div class="metric-info">
+                            <label>Khí CO₂</label>
+                            <span class="value" id="val-co2">--</span> <span class="unit">ppm</span>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            <section class="dashboard-body">
+            <section class="card heatmap-section">
+                <h2><i class="fa-solid fa-map-location-dot"></i> Bản Đồ Nhiệt Môi Trường Căn Nhà (Heatmap)</h2>
+                <div class="map-grid">
+                    <div class="room-box safe" id="room-living">
+                        <div class="room-name">Phòng Khách</div>
+                        <div class="room-aqi">AQI: <span id="aqi-living">Tốt</span></div>
+                        <i class="fa-solid fa-couch room-icon"></i>
+                        <span class="robot-pin" id="pin-living"><i class="fa-solid fa-robot"></i> Robot ở đây</span>
+                    </div>
+                    <div class="room-box" id="room-bed">
+                        <div class="room-name">Phòng Ngủ</div>
+                        <div class="room-aqi">AQI: <span id="aqi-bed">Tốt</span></div>
+                        <i class="fa-solid fa-bed room-icon"></i>
+                        <span class="robot-pin" id="pin-bed"><i class="fa-solid fa-robot"></i> Robot ở đây</span>
+                    </div>
+                    <div class="room-box" id="room-kitchen">
+                        <div class="room-name">Phòng Bếp</div>
+                        <div class="room-aqi">AQI: <span id="aqi-kitchen">Cảnh báo</span></div>
+                        <i class="fa-solid fa-utensils room-icon"></i>
+                        <span class="robot-pin" id="pin-kitchen"><i class="fa-solid fa-robot"></i> Robot ở đây</span>
+                    </div>
+                    <div class="room-box" id="room-office">
+                        <div class="room-name">Phòng Làm Việc</div>
+                        <div class="room-aqi">AQI: <span id="aqi-office">Tốt</span></div>
+                        <i class="fa-solid fa-laptop-code room-icon"></i>
+                        <span class="robot-pin" id="pin-office"><i class="fa-solid fa-robot"></i> Robot ở đây</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card smarthome-section">
+                <h2><i class="fa-solid fa-house-signal"></i> Tự Động Hóa Thiết Bị Smart Home</h2>
+                <div class="device-grid">
+                    <div class="device-item" id="device-air-purifier">
+                        <i class="fa-solid fa-fan device-icon"></i>
+                        <div class="device-info">
+                            <h4>Máy Lọc Không Khí</h4>
+                            <span class="protocol-tag">MQTT / Tuya</span>
+                            <span class="status-text">OFF</span>
+                        </div>
+                    </div>
+                    <div class="device-item" id="device-ac">
+                        <i class="fa-solid fa-snowflake device-icon"></i>
+                        <div class="device-info">
+                            <h4>Điều Hòa Cool/Dry</h4>
+                            <span class="protocol-tag">Home Assistant</span>
+                            <span class="status-text">OFF</span>
+                        </div>
+                    </div>
+                    <div class="device-item" id="device-fan">
+                        <i class="fa-solid fa-wind device-icon"></i>
+                        <div class="device-info">
+                            <h4>Quạt Thông Gió</h4>
+                            <span class="protocol-tag">Zigbee / Tuya</span>
+                            <span class="status-text">OFF</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card notify-section">
+                <h2><i class="fa-solid fa-paper-plane"></i> Kênh Cảnh Báo Tự Động (Telegram / Zalo / Email)</h2>
+                <div class="notify-channels">
+                    <div class="channel-card active" id="channel-telegram">
+                        <i class="fa-brands fa-telegram channel-icon"></i>
+                        <div class="channel-info">
+                            <h4>Telegram Bot</h4>
+                            <span class="channel-status">Đang bật (Real-time)</span>
+                        </div>
+                    </div>
+                    <div class="channel-card active" id="channel-zalo">
+                        <i class="fa-solid fa-message channel-icon"></i>
+                        <div class="channel-info">
+                            <h4>Zalo OA Notice</h4>
+                            <span class="channel-status">Sẵn sàng (API)</span>
+                        </div>
+                    </div>
+                    <div class="channel-card active" id="channel-email">
+                        <i class="fa-solid fa-envelope channel-icon"></i>
+                        <div class="channel-info">
+                            <h4>Email Alert</h4>
+                            <span class="channel-status">Sẵn sàng (SMTP)</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card chart-section">
+                <h2><i class="fa-solid fa-chart-line"></i> Biểu Đồ Lịch Sử Chỉ Số Môi Trường</h2>
                 <div class="chart-container">
-                    <h3><i class="fa-solid fa-chart-line"></i> Biểu Đồ Môi Trường Real-Time</h3>
                     <canvas id="envChart"></canvas>
                 </div>
+            </section>
 
-                <div class="logs-container">
-                    <h3><i class="fa-solid fa-list-check"></i> Nhật Ký Hệ Thống & Cảnh Báo</h3>
-                    <div class="log-box" id="system-logs"></div>
+            <section class="card logs-section">
+                <h2><i class="fa-solid fa-terminal"></i> Nhật Ký Hoạt Động & Tin Nhắn Gửi Đi</h2>
+                <div class="log-console" id="log-console">
+                    <p class="log-item info">[SYSTEM] Khởi chạy thành công AuraBot AI Dashboard v4.0...</p>
                 </div>
             </section>
+
         </main>
     </div>
 
